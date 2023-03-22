@@ -2,6 +2,15 @@ package com.example.demo.events;
 
 import java.time.LocalDateTime;
 
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -15,8 +24,12 @@ import lombok.Setter;
 @Getter
 @Setter
 @EqualsAndHashCode(of = "id")
+@Entity
 public class Event {
-	private String name;
+	
+    @Id @GeneratedValue
+    private Integer id;
+    private String name;
     private String description;
     private LocalDateTime beginEnrollmentDateTime;
     private LocalDateTime closeEnrollmentDateTime;
@@ -26,10 +39,26 @@ public class Event {
     private int basePrice; // (optional)
     private int maxPrice; // (optional)
     private int limitOfEnrollment;
-    
     private boolean offline;
     private boolean free;
-    private EventStatus eventStatus;
+    @Enumerated(EnumType.STRING)
+    private EventStatus eventStatus = EventStatus.DRAFT;
+//    @ManyToOne
+//    @JsonSerialize(using = AccountSerializer.class)
+//    private Account manager;
 
-    //java bean spec에 맞춰서
+    public void update() {
+        // Update free
+        if (this.basePrice == 0 && this.maxPrice == 0) {
+            this.free = true;
+        } else {
+            this.free = false;
+        }
+        // Update offline
+        if (this.location == null || this.location.isBlank()) {
+            this.offline = false;
+        } else {
+            this.offline = true;
+        }
+    }
 }
