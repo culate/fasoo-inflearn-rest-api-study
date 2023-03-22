@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 //import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.hateoas.MediaTypes;
 import java.net.URI;
 
@@ -29,18 +30,19 @@ public class EventController {
 
     private final EventRepository eventRepository;
 
-    public EventController(EventRepository eventRepository/*, ModelMapper modelMapper, EventValidator eventValidator*/) {
+    private final ModelMapper modelMapper;
+    
+    public EventController(EventRepository eventRepository, ModelMapper modelMapper/*, EventValidator eventValidator*/) {
         this.eventRepository = eventRepository;
-        //this.modelMapper = modelMapper;
+        this.modelMapper = modelMapper;
         //this.eventValidator = eventValidator;
     }
 
 	@PostMapping
-	public ResponseEntity<Event> createEvent(@RequestBody Event event) {
-		
+	public ResponseEntity<Event> createEvent(@RequestBody EventDto eventDto) {
+		Event event = modelMapper.map(eventDto,  Event.class);
         Event newEvent = this.eventRepository.save(event);
 		URI createUri = linkTo(EventController.class).slash(newEvent.getId()).toUri();
-		event.setId(10);
 		return ResponseEntity.created(createUri).body(event);
 	}
 }
