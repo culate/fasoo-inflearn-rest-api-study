@@ -52,11 +52,13 @@ public class EventController {
 	public ResponseEntity createEvent(@RequestBody @Valid EventDto eventDto, Errors errors) {
         if (errors.hasErrors()) {
             return badRequest(errors);
+            //rreturn ResponseEntity.badRequest().body(errors);
         }
 
         eventValidator.validate(eventDto, errors);
         if (errors.hasErrors()) {
             return badRequest(errors);
+            //return ResponseEntity.badRequest().body(errors);
         }
 
         Event event = modelMapper.map(eventDto,  Event.class);
@@ -77,6 +79,10 @@ public class EventController {
 	}
 
     private ResponseEntity badRequest(Errors errors) {
+    	// 이거 들어가면 서 테스트가 깨짐
+    	// 코드를 따라가 봤더니 ErrorResource에서 indexController의 주소를 따라감
+    	// 그러고 나서 주소를 호출함. indexController를 호출하는게 아닌 듯...
+    	// 이렇게 하는게 맞나??
         return ResponseEntity.badRequest().body(new ErrorsResource(errors));
     }
 }
