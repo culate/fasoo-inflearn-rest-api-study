@@ -13,6 +13,9 @@ public class EventValidator {
             errors.reject("wrongPrices", "Values fo prices are wrong");
         }
 
+        // 이벤트 종료 일시가 이벤트 시작 일시 보다 이전인 경우
+        // 또는 이벤트 종료 일시가 등록 종료 일시 보다 이전인 경우
+        // 또는 이벤트 종료 일시가 등록 시작 일시보다 이전인 경우
         LocalDateTime endEventDateTime = eventDto.getEndEventDateTime();
         if (endEventDateTime.isBefore(eventDto.getBeginEventDateTime()) ||
 	        endEventDateTime.isBefore(eventDto.getCloseEnrollmentDateTime()) ||
@@ -21,6 +24,22 @@ public class EventValidator {
         }
 
         // TODO BeginEventDateTime
+        // 이벤트 시작 일시가 이벤트 종료 일시 보다 이후인 경우 -> 이건 위에서 걸러짐
+        // 또는 이벤트 시작 일시가 등록 종료 일시 보다 이전인 경우
+        // 또는 이벤트 시작 일시가 등록 시작 일시보다 이전인 경우
+        LocalDateTime beginEventDateTime = eventDto.getBeginEventDateTime();
+        if (beginEventDateTime.isBefore(eventDto.getCloseEnrollmentDateTime()) ||
+        	beginEventDateTime.isBefore(eventDto.getBeginEnrollmentDateTime())) {
+            errors.rejectValue("beginEventDateTime", "wrongValue", "beginEventDateTime is wrong");
+        }
+
         // TODO CloseEnrollmentDateTime
+        // 등록 종료 일시가 등록 시작 일시 보다 이전인 경우
+        // 등록 종료 일시가 이벤트 시작 일시 보다 이후인 경우 -> 위에서 걸러짐
+        // 등록 종료 일시가 이벤트 종료 일시 보다 이후인 경우 -> 위에서 걸러짐
+        LocalDateTime closeEnrollmentDateTime = eventDto.getCloseEnrollmentDateTime();
+        if (closeEnrollmentDateTime.isBefore(eventDto.getBeginEnrollmentDateTime())) {
+            errors.rejectValue("closeEnrollmentDateTime", "wrongValue", "closeEnrollmentDateTime is wrong");
+        }
     }
 }

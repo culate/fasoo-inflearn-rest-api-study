@@ -23,6 +23,8 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+
 import java.net.URI;
 
 import javax.validation.Valid;
@@ -58,7 +60,16 @@ public class EventController {
         Event event = modelMapper.map(eventDto,  Event.class);
         event.update();
         Event newEvent = this.eventRepository.save(event);
-		URI createUri = linkTo(EventController.class).slash(newEvent.getId()).toUri();
-		return ResponseEntity.created(createUri).body(event);
+
+        //ControllerLinkBuilder selfLinkBuilder = linkTo(EventController.class).slash(newEvent.getId());
+        //ControllerLinkBuilder -> WebMvcLinkBuilder
+        WebMvcLinkBuilder selfLinkBuilder = linkTo(EventController.class).slash(newEvent.getId());
+		URI createdUri = selfLinkBuilder.toUri();
+        EventResource eventResource = new EventResource(event);
+        eventResource.add(linkTo(EventController.class).withRel("query-events"));
+        eventResource.add(selfLinkBuilder.withRel("update-event"));
+        //eventResource.add(new Link("/docs/index.html#resources-events-create").withRel("profile"));
+        return ResponseEntity.created(createdUri).body(eventResource);
+		//return ResponseEntity.created(createUri).body(new EventResource(event));
 	}
 }
