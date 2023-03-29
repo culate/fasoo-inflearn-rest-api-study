@@ -186,6 +186,11 @@ public class EventControllerTests {
                 .andExpect(status().isBadRequest());
     }
 
+    // https://www.inflearn.com/questions/72123/%EC%9D%B8%EB%8D%B1%EC%8A%A4-%EB%A7%8C%EB%93%A4%EA%B8%B0-%EC%97%90%EC%84%9C-errorsresource-%EB%B6%80%EB%B6%84-%EC%A7%88%EB%AC%B8%EC%9E%85%EB%8B%88%EB%8B%A4
+    // 스프링 부트 2.3으로 올라가면서 Jackson 라이브러리가 더이상 Array부터 만드는걸 허용하지 않습니다.
+    // ErrorSerializer 코드에 한줄만 추가해주시면 됩니다
+    // jsonGenerator.writeFieldName("errors");
+    // 그런 다음 테스트코드를 content[0]이 아니라 errors[0]으로 조회하도록 고치면 되구요.
     @Test
     @DisplayName("입력 값이 잘못된 경우에 에러가 발생하는 테스트")
     public void createEvent_Bad_Request_Wrong_Input() throws Exception {
@@ -209,12 +214,15 @@ public class EventControllerTests {
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 // 강의 대로 content[0]를 넣으면 테스트가 깨짐
-                .andExpect(jsonPath("$[0].objectName").exists())
-                .andExpect(jsonPath("$[0].defaultMessage").exists())
-                .andExpect(jsonPath("$[0].code").exists())
+//                .andExpect(jsonPath("$[0].objectName").exists())
+//                .andExpect(jsonPath("$[0].defaultMessage").exists())
+//                .andExpect(jsonPath("$[0].code").exists())
                 //.andExpect(jsonPath("content[0].objectName").exists())
                 //.andExpect(jsonPath("content[0].defaultMessage").exists())
                 //.andExpect(jsonPath("content[0].code").exists())
+                .andExpect(jsonPath("errors[0].objectName").exists())
+                .andExpect(jsonPath("errors[0].defaultMessage").exists())
+                .andExpect(jsonPath("errors[0].code").exists())
                 .andExpect(jsonPath("_links.index").exists())
         ;
     }

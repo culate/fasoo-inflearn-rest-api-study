@@ -24,6 +24,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 //import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
@@ -41,8 +42,13 @@ public class EventController {
     private final ModelMapper modelMapper;
     
     private final EventValidator eventValidator;
-    
-    public EventController(EventRepository eventRepository, ModelMapper modelMapper, EventValidator eventValidator) {
+
+    @Autowired 
+    ErrorsResource errorsResource;
+
+    public EventController(EventRepository eventRepository, 
+    		ModelMapper modelMapper, 
+    		EventValidator eventValidator) {
         this.eventRepository = eventRepository;
         this.modelMapper = modelMapper;
         this.eventValidator = eventValidator;
@@ -79,10 +85,10 @@ public class EventController {
 	}
 
     private ResponseEntity badRequest(Errors errors) {
-    	// 이거 들어가면 서 테스트가 깨짐
-    	// 코드를 따라가 봤더니 ErrorResource에서 indexController의 주소를 따라감
-    	// 그러고 나서 주소를 호출함. indexController를 호출하는게 아닌 듯...
-    	// 이렇게 하는게 맞나??
-        return ResponseEntity.badRequest().body(new ErrorsResource(errors));
+    	// https://acet.pe.kr/924
+    	// 이 코드가 좋아 보여서 적용해봄. 
+    	// 뭐가 더 좋은지는 모르겠고.. 공부 차원..
+        //return ResponseEntity.badRequest().body(new ErrorsResource(errors));
+    	return ResponseEntity.badRequest().body(errorsResource.addLink(errors));
     }
 }
