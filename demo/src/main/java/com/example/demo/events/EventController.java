@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,6 +35,7 @@ import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 
 import java.net.URI;
+import java.util.Optional;
 
 import javax.validation.Valid;
 
@@ -100,6 +102,24 @@ public class EventController {
          //   pagedResources.add(linkTo(EventController.class).withRel("create-event"));
         //}
         return ResponseEntity.ok(pagedResources);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity getEvent(@PathVariable Integer id/*,
+                                   @CurrentUser Account currentUser*/) {
+        Optional<Event> optionalEvent = this.eventRepository.findById(id);
+        if (optionalEvent.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Event event = optionalEvent.get();
+        EventResource eventResource = new EventResource(event);
+        eventResource.add(/*new Link*/Link.of("/docs/index.html#resources-events-get").withRel("profile"));
+        //if (event.getManager().equals(currentUser)) {
+         //   eventResource.add(linkTo(EventController.class).slash(event.getId()).withRel("update-event"));
+        //}
+
+        return ResponseEntity.ok(eventResource);
     }
 
     private ResponseEntity badRequest(Errors errors) {
