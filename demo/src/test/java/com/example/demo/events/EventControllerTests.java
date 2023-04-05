@@ -9,9 +9,7 @@ import static org.springframework.restdocs.headers.HeaderDocumentation.requestHe
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
 import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders;
-import static org.springframework.restdocs.payload.PayloadDocumentation.relaxedResponseFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
-//import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -23,54 +21,26 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.time.LocalDateTime;
 import java.util.stream.IntStream;
 
-//import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.runner.RunWith;
-import org.modelmapper.ModelMapper;
-//import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-//import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
-//import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
 
-import com.example.demo.common.RestDocsConfiguration;
+import com.example.demo.common.BaseTest;
+//import com.example.demo.common.RestDocsConfiguration;
 import com.example.demo.common.TestDescription;
-import com.fasterxml.jackson.databind.ObjectMapper;
+//import com.fasterxml.jackson.databind.ObjectMapper;
 
-@RunWith(SpringRunner.class)
-//@WebMvcTest
-@SpringBootTest
-@AutoConfigureMockMvc
-@AutoConfigureRestDocs
-@Import(RestDocsConfiguration.class)
-@ActiveProfiles("test")
-public class EventControllerTests {
+public class EventControllerTests extends BaseTest {
 
-	@Autowired
-	MockMvc mockMvc;
-	
-	@Autowired
-	ObjectMapper objectMapper;
-	
 //	@MockBean
 //	EventRepository eventRepository;
 	
     @Autowired
     EventRepository eventRepository;
     
-    @Autowired
-    protected ModelMapper modelMapper;
-
 	@Test
 	@TestDescription("정상") // 이거만 일단 강의 대로...
 	public void createEvent() throws Exception {
