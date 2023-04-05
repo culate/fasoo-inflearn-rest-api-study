@@ -12,7 +12,7 @@ import static org.springframework.restdocs.headers.HeaderDocumentation.responseH
 import static org.springframework.restdocs.payload.PayloadDocumentation.relaxedResponseFields;
 import static org.springframework.restdocs.payload.PayloadDocumentation.responseFields;
 //import static org.springframework.restdocs.request.RequestDocumentation.*;
-
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -20,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDateTime;
+import java.util.stream.IntStream;
 
 //import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -62,6 +63,9 @@ public class EventControllerTests {
 //	@MockBean
 //	EventRepository eventRepository;
 	
+    @Autowired
+    EventRepository eventRepository;
+    
 	@Test
 	@TestDescription("정상") // 이거만 일단 강의 대로...
 	public void createEvent() throws Exception {
@@ -225,6 +229,56 @@ public class EventControllerTests {
                 .andExpect(jsonPath("errors[0].code").exists())
                 .andExpect(jsonPath("_links.index").exists())
         ;
+    }
+
+    @Test
+    @DisplayName("30개의 이벤트를 10개씩 두번째 페이지 조회하기")
+    public void queryEvents() throws Exception {
+        // Given
+        IntStream.range(0, 30).forEach(this::generateEvent);
+
+        // When & Then
+        this.mockMvc.perform(get("/api/events")
+                .param("page", "1")
+                .param("size", "10")
+                .param("sort", "name,DESC"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("page").exists())
+                .andExpect(jsonPath("_embedded.eventList[0]._links.self").exists())
+                .andExpect(jsonPath("_links.self").exists())
+                .andExpect(jsonPath("_links.profile").exists())
+                .andDo(document("query-events"))
+        ;
+    }
+
+//    private Event generateEvent(int index, Account account) {
+//        Event event = buildEvent(index);
+//        event.setManager(account);
+//        return this.eventRepository.save(event);
+//    }
+
+    private Event generateEvent(int index) {
+        Event event = buildEvent(index);
+        return this.eventRepository.save(event);
+    }
+
+    private Event buildEvent(int index) {
+        return Event.builder()
+                    .name("event " + index)
+                    .description("test event")
+                    .beginEnrollmentDateTime(LocalDateTime.of(2018, 11, 23, 14, 21))
+                    .closeEnrollmentDateTime(LocalDateTime.of(2018, 11, 24, 14, 21))
+                    .beginEventDateTime(LocalDateTime.of(2018, 11, 25, 14, 21))
+                    .endEventDateTime(LocalDateTime.of(2018, 11, 26, 14, 21))
+                    .basePrice(100)
+                    .maxPrice(200)
+                    .limitOfEnrollment(100)
+                    .location("강남역 D2 스타텁 팩토리")
+                    .free(false)
+                    .offline(true)
+                    .eventStatus(EventStatus.DRAFT)
+                    .build();
     }
 
 }

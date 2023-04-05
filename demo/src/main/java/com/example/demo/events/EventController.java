@@ -3,6 +3,7 @@ package com.example.demo.events;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,6 +26,9 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
@@ -83,6 +87,20 @@ public class EventController {
         return ResponseEntity.created(createdUri).body(eventResource);
 		//return ResponseEntity.created(createUri).body(new EventResource(event));
 	}
+
+    @GetMapping
+    public ResponseEntity queryEvents(Pageable pageable,
+                                      PagedResourcesAssembler<Event> assembler//,
+                                      //@CurrentUser Account account
+                                      ) {
+        Page<Event> page = this.eventRepository.findAll(pageable);
+        var pagedResources = assembler.toModel(page, e -> new EventResource(e));
+        pagedResources.add(/*new Link*/Link.of("/docs/index.html#resources-events-list").withRel("profile"));
+        //if (account != null) {
+         //   pagedResources.add(linkTo(EventController.class).withRel("create-event"));
+        //}
+        return ResponseEntity.ok(pagedResources);
+    }
 
     private ResponseEntity badRequest(Errors errors) {
     	// https://acet.pe.kr/924
