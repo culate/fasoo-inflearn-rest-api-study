@@ -24,6 +24,7 @@ import java.util.stream.IntStream;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -209,12 +210,32 @@ public class EventControllerTests extends BaseTest {
     @Test
     @DisplayName("30개의 이벤트를 10개씩 두번째 페이지 조회하기")
     public void queryEvents() throws Exception {
+    	
+    	// 숙제
+    	// queryEvents (GET /api/events)에 필터 추가하기
+    	// 아래 조건으로 검색할 수 있도록 수정
+    	//	- basePrice가 100에서 200 사이인 event만 조회하기
+    	//	- 현재 등록 중인 event만 조회하기 (enrollment)
+    	// 할 일
+    	//	- basePrice가 100에서 200 사이인 테스트 event 만들어져야 함.
+    	//		-> buildEvent에서 index * 10을 더하도록 수정
+    	//		-> basePrice는 100 ~ 400 사이, maxPrice는 200 ~ 500 사이
+    	//		-> 100 ~ 200 사이는 100 ~ 190까지 10개가 나옴
+    	//	- 필터에서 basePrice range를 체크할 수 있어야 함.
+    	//		-> 필터를 추가한다는 의미가 뭐려나...
+    	//		-> EventRepository 에 JpaSpecificationExecutor 추가
+    	//		-> EventSpecification 클래스 추가
+    	//		-> this.eventRepository.findAll에 EventSpecification 메서드 추가...
+    	//	- 필터에서 현재 등록 중인 event를 체크할 수 있어야 함 
+    	//		-> Specification을 and로 이어 붙였음.
+    	//	- 인증에서 GET 은 anonymous로 풀어 놓는다. 인증을 어떻게 넘어가는 지 모르니까..
+    	
         // Given
         IntStream.range(0, 30).forEach(this::generateEvent);
 
         // When & Then
         this.mockMvc.perform(get("/api/events")
-                .param("page", "1")
+                .param("page", "0")
                 .param("size", "10")
                 .param("sort", "name,DESC"))
                 .andDo(print())
@@ -349,13 +370,14 @@ public class EventControllerTests extends BaseTest {
                     .closeEnrollmentDateTime(LocalDateTime.of(2018, 11, 24, 14, 21))
                     .beginEventDateTime(LocalDateTime.of(2018, 11, 25, 14, 21))
                     .endEventDateTime(LocalDateTime.of(2018, 11, 26, 14, 21))
-                    .basePrice(100)
-                    .maxPrice(200)
+                    .basePrice(index * 10 + 100)
+                    .maxPrice(index * 10 + 200)
                     .limitOfEnrollment(100)
-                    .location("강남역 D2 스타텁 팩토리")
+                    //.location("강남역 D2 스타텁 팩토리")
+                    .location("english")
                     .free(false)
                     .offline(true)
-                    .eventStatus(EventStatus.DRAFT)
+                    .eventStatus( index %2 == 0 ? EventStatus.BEGAN_ENROLLMEND : EventStatus.CLOSED_ENROLLMENT)
                     .build();
     }
 

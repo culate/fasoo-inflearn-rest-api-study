@@ -30,6 +30,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
@@ -65,7 +66,7 @@ public class EventController {
 	public ResponseEntity createEvent(@RequestBody @Valid EventDto eventDto, Errors errors) {
         if (errors.hasErrors()) {
             return badRequest(errors);
-            //rreturn ResponseEntity.badRequest().body(errors);
+            //return ResponseEntity.badRequest().body(errors);
         }
 
         eventValidator.validate(eventDto, errors);
@@ -96,7 +97,12 @@ public class EventController {
                                       PagedResourcesAssembler<Event> assembler//,
                                       //@CurrentUser Account account
                                       ) {
-        Page<Event> page = this.eventRepository.findAll(pageable);
+        //Page<Event> page = this.eventRepository.findAll(pageable);
+        Specification<Event> spec = Specification.where(EventSpecification.limitBasePrice());
+       	spec = spec.and(EventSpecification.progressEnrollment());
+        //Specification<Event> spec = Specification.where(EventSpecification.progressEnrollment());
+
+        Page<Event> page = this.eventRepository.findAll(spec, pageable);
         var pagedResources = assembler.toModel(page, e -> new EventResource(e));
         pagedResources.add(/*new Link*/Link.of("/docs/index.html#resources-events-list").withRel("profile"));
         //if (account != null) {
