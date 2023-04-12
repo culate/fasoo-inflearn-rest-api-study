@@ -9,6 +9,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
+import com.example.demo.accounts.Account;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import lombok.AllArgsConstructor;
@@ -43,9 +44,9 @@ public class Event {
     private boolean free;
     @Enumerated(EnumType.STRING)
     private EventStatus eventStatus = EventStatus.DRAFT;
-//    @ManyToOne
+    @ManyToOne
 //    @JsonSerialize(using = AccountSerializer.class)
-//    private Account manager;
+    private Account manager;
 
     public void update() {
         // Update free
