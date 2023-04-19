@@ -219,7 +219,7 @@ public class EventControllerTests extends BaseTest {
                 .build();
 
         this.mockMvc.perform(post("/api/events")
-                //.header(HttpHeaders.AUTHORIZATION, getBearerToken(true))
+                .header(HttpHeaders.AUTHORIZATION, getBearerToken(true))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(this.objectMapper.writeValueAsString(eventDto)))
                 .andDo(print())
