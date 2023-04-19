@@ -42,6 +42,7 @@ import com.example.demo.accounts.Account;
 import com.example.demo.accounts.AccountRepository;
 import com.example.demo.accounts.AccountRole;
 import com.example.demo.accounts.AccountService;
+import com.example.demo.common.AppProperties;
 import com.example.demo.common.BaseTest;
 //import com.example.demo.common.RestDocsConfiguration;
 import com.example.demo.common.TestDescription;
@@ -62,6 +63,9 @@ public class EventControllerTests extends BaseTest {
 
     @Autowired
     AccountRepository accountRepository;
+
+    @Autowired
+    AppProperties appProperties;
 
     // 강의 내용하고 다른 이유가 있구만...
     // Before는 먹는데, BeforeEach나 BeforeAll은 안먹는다.
@@ -421,32 +425,11 @@ public class EventControllerTests extends BaseTest {
         if (needToCreateAccount) {
             createAccount();
         }
-//
-//        ResultActions perform = this.mockMvc.perform(post("/oauth/token")
-//                .with(httpBasic(appProperties.getClientId(), appProperties.getClientSecret()))
-//                .param("username", appProperties.getUserUsername())
-//                .param("password", appProperties.getUserPassword())
-//                .param("grant_type", "password"));
-//
-//        var responseBody = perform.andReturn().getResponse().getContentAsString();
-//        Jackson2JsonParser parser = new Jackson2JsonParser();
-//        return parser.parseMap(responseBody).get("access_token").toString();
 
-    	String username = "keeun@emake.com"; 
-    	String password = "keesun";
-//    	Account keesun = Account.builder()
-//    			.email(username)
-//    			.password(password)
-//    			.roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
-//    			.build();
-//    	this.accountService.saveAccount(keesun);
-    	
-    	String clientId = "myApp";
-    	String clientSecret = "pass";
     	ResultActions perform = this.mockMvc.perform(post("/oauth/token")
-    			.with(httpBasic(clientId, clientSecret))
-    			.param("username", username)
-    			.param("password", password)
+                .with(httpBasic(appProperties.getClientId(), appProperties.getClientSecret()))
+                .param("username", appProperties.getUserUsername())
+                .param("password", appProperties.getUserPassword())
     			.param("grant_type", "password"));
 
     	var responseBody = perform.andReturn().getResponse().getContentAsString();
@@ -455,18 +438,11 @@ public class EventControllerTests extends BaseTest {
     }
 
     private Account createAccount() {
-//        Account keesun = Account.builder()
-//                .email(appProperties.getUserUsername())
-//                .password(appProperties.getUserPassword())
-//                .roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
-//                .build();
-    	String username = "keeun@emake.com"; 
-    	String password = "keesun";
-    	Account keesun = Account.builder()
-    			.email(username)
-    			.password(password)
-    			.roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
-    			.build();
+        Account keesun = Account.builder()
+                .email(appProperties.getUserUsername())
+                .password(appProperties.getUserPassword())
+                .roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
+                .build();
         return this.accountService.saveAccount(keesun);
     }
 

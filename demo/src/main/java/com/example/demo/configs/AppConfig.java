@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.example.demo.accounts.Account;
 import com.example.demo.accounts.AccountRole;
 import com.example.demo.accounts.AccountService;
+import com.example.demo.common.AppProperties;
 
 import java.util.Set;
 
@@ -36,34 +37,24 @@ public class AppConfig {
             @Autowired
             AccountService accountService;
 
-//            @Autowired
-//            AppProperties appProperties;
+            @Autowired
+            AppProperties appProperties;
 
             @Override
             public void run(ApplicationArguments args) throws Exception {
-                Account keesun = Account.builder()
-                      .email("keesun@email.com")
-                      .password("keesun")
-                      .roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
-                      .build();
-                accountService.saveAccount(keesun);
-//                Account admin = Account.builder()
-////                        .email(appProperties.getAdminUsername())
-////                        .password(appProperties.getAdminPassword())
-//                        .email("keesun@email.com")
-//                        .password("keesun")
-//                        .roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
-//                        .build();
-//                accountService.saveAccount(admin);
-//
-//                Account user = Account.builder()
-////                        .email(appProperties.getUserUsername())
-////                        .password(appProperties.getUserPassword())
-//                        .email("")
-//                        .password("")
-//                        .roles(Set.of(AccountRole.USER))
-//                        .build();
-//                accountService.saveAccount(user);
+                Account admin = Account.builder()
+                        .email(appProperties.getAdminUsername())
+                        .password(appProperties.getAdminPassword())
+                        .roles(Set.of(AccountRole.ADMIN, AccountRole.USER))
+                        .build();
+                accountService.saveAccount(admin);
+
+                Account user = Account.builder()
+                        .email(appProperties.getUserUsername())
+                        .password(appProperties.getUserPassword())
+                        .roles(Set.of(AccountRole.USER))
+                        .build();
+                accountService.saveAccount(user);
             }
         };
     }
