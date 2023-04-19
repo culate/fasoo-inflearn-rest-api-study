@@ -1,6 +1,11 @@
 package com.example.demo.events;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,6 +15,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.example.demo.accounts.Account;
+import com.example.demo.accounts.AccountAdapter;
+import com.example.demo.accounts.CurrentUser;
 import com.example.demo.common.ErrorsResource;
 
 //import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
@@ -94,9 +102,14 @@ public class EventController {
 
     @GetMapping
     public ResponseEntity queryEvents(Pageable pageable,
-                                      PagedResourcesAssembler<Event> assembler//,
-                                      //@CurrentUser Account account
+                                      PagedResourcesAssembler<Event> assembler,
+                                      //@AuthenticationPrincipal AccountAdapter account
+                                      //@AuthenticationPrincipal(expression = "account") Account account
+                                      @CurrentUser Account account
                                       ) {
+//    	Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//    	User principal = (User) authentication.getPrincipal();
+    	
         //Page<Event> page = this.eventRepository.findAll(pageable);
         Specification<Event> spec = Specification.where(EventSpecification.limitBasePrice());
        	spec = spec.and(EventSpecification.progressEnrollment());
@@ -105,15 +118,15 @@ public class EventController {
         Page<Event> page = this.eventRepository.findAll(spec, pageable);
         var pagedResources = assembler.toModel(page, e -> new EventResource(e));
         pagedResources.add(/*new Link*/Link.of("/docs/index.html#resources-events-list").withRel("profile"));
-        //if (account != null) {
-         //   pagedResources.add(linkTo(EventController.class).withRel("create-event"));
-        //}
+        if (account != null) {
+            pagedResources.add(linkTo(EventController.class).withRel("create-event"));
+        }
         return ResponseEntity.ok(pagedResources);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity getEvent(@PathVariable Integer id/*,
-                                   @CurrentUser Account currentUser*/) {
+    public ResponseEntity getEvent(@PathVariable Integer id,
+                                   @CurrentUser Account currentUser) {
         Optional<Event> optionalEvent = this.eventRepository.findById(id);
         if (optionalEvent.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -122,9 +135,9 @@ public class EventController {
         Event event = optionalEvent.get();
         EventResource eventResource = new EventResource(event);
         eventResource.add(/*new Link*/Link.of("/docs/index.html#resources-events-get").withRel("profile"));
-        //if (event.getManager().equals(currentUser)) {
-         //   eventResource.add(linkTo(EventController.class).slash(event.getId()).withRel("update-event"));
-        //}
+        if (event.getManager().equals(currentUser)) {
+            eventResource.add(linkTo(EventController.class).slash(event.getId()).withRel("update-event"));
+        }
 
         return ResponseEntity.ok(eventResource);
     }
@@ -132,8 +145,8 @@ public class EventController {
     @PutMapping("/{id}")
     public ResponseEntity updateEvent(@PathVariable Integer id,
                                       @RequestBody @Valid EventDto eventDto,
-                                      Errors errors/*,
-                                      @CurrentUser Account currentUser*/) {
+                                      Errors errors,
+                                      @CurrentUser Account currentUser) {
         Optional<Event> optionalEvent = this.eventRepository.findById(id);
         if (optionalEvent.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -149,9 +162,9 @@ public class EventController {
         }
 
         Event existingEvent = optionalEvent.get();
-        //if (!existingEvent.getManager().equals(currentUser)) {
-        //    return new ResponseEntity(HttpStatus.UNAUTHORIZED);
-        //}
+        if (!existingEvent.getManager().equals(currentUser)) {
+            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+        }
 
         this.modelMapper.map(eventDto, existingEvent);
         Event savedEvent = this.eventRepository.save(existingEvent);
