@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
 import com.example.demo.accounts.Account;
+import com.example.demo.accounts.AccountSerializer;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import lombok.AllArgsConstructor;
@@ -45,7 +46,7 @@ public class Event {
     @Enumerated(EnumType.STRING)
     private EventStatus eventStatus = EventStatus.DRAFT;
     @ManyToOne
-//    @JsonSerialize(using = AccountSerializer.class)
+    @JsonSerialize(using = AccountSerializer.class)
     private Account manager;
 
     public void update() {
