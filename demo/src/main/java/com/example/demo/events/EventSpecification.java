@@ -3,9 +3,9 @@ package com.example.demo.events;
 import org.springframework.data.jpa.domain.Specification;
 
 public class EventSpecification {
-    public static Specification<Event> limitBasePrice() {
+    public static Specification<Event> limitBasePrice(int start, int end) {
         return (Specification<Event>) ((root, query, builder) -> 
-                builder.between(root.get("basePrice"), 100, 200)
+                builder.between(root.get("basePrice"), start, end)
         );
     }
 

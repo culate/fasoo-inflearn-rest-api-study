@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.demo.accounts.Account;
 import com.example.demo.accounts.AccountAdapter;
@@ -103,19 +104,37 @@ public class EventController {
     @GetMapping
     public ResponseEntity queryEvents(Pageable pageable,
                                       PagedResourcesAssembler<Event> assembler,
-                                      //@AuthenticationPrincipal AccountAdapter account
-                                      //@AuthenticationPrincipal(expression = "account") Account account
-                                      @CurrentUser Account account
+                                      @CurrentUser Account account,
+                                      @RequestParam(required = false, defaultValue = "-1") int startBasePrice,
+                                      @RequestParam(required = false, defaultValue = "-1") int endBasePrice,
+                                      @RequestParam(required = false) boolean checkEnrollment
                                       ) {
-//    	Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//    	User principal = (User) authentication.getPrincipal();
-    	
-        //Page<Event> page = this.eventRepository.findAll(pageable);
-        Specification<Event> spec = Specification.where(EventSpecification.limitBasePrice());
-       	spec = spec.and(EventSpecification.progressEnrollment());
-        //Specification<Event> spec = Specification.where(EventSpecification.progressEnrollment());
 
-        Page<Event> page = this.eventRepository.findAll(spec, pageable);
+    	Page<Event> page;
+//    	if (false) {
+//	        Specification<Event> spec = Specification.where(null);
+//
+//	    	if (startBasePrice >= 0 && endBasePrice >= startBasePrice) {
+//	    		spec = spec.and(EventSpecification.limitBasePrice(startBasePrice, endBasePrice));
+//	    	}
+//    		if (checkEnrollment) {
+//    			spec = spec.and(EventSpecification.progressEnrollment());
+//    		}
+//	        page = this.eventRepository.findAll(spec, pageable);
+//	    	
+//    	} else {
+	    	if (startBasePrice >= 0 && endBasePrice >= startBasePrice) {
+	    		if (checkEnrollment) {
+	    			page = this.eventRepository.findByBasePriceBetweenAndEventStatusIs(startBasePrice, endBasePrice, EventStatus.BEGAN_ENROLLMEND, pageable);
+	    		} else {
+	    			page = this.eventRepository.findByBasePriceBetween(startBasePrice, endBasePrice, pageable);
+	    		}
+	    	} else if (checkEnrollment) {
+	    		page = this.eventRepository.findByEventStatus(EventStatus.BEGAN_ENROLLMEND, pageable);
+	    	} else {
+	    		page = this.eventRepository.findAll(pageable);
+	    	}
+//    	}
         var pagedResources = assembler.toModel(page, e -> new EventResource(e));
         pagedResources.add(/*new Link*/Link.of("/docs/index.html#resources-events-list").withRel("profile"));
         if (account != null) {
@@ -163,7 +182,7 @@ public class EventController {
 
         Event existingEvent = optionalEvent.get();
         if (!existingEvent.getManager().equals(currentUser)) {
-            return new ResponseEntity(HttpStatus.UNAUTHORIZED);
+            return new ResponseEntity(HttpStatus.FORBIDDEN); //UNAUTHORIZED => FORBIDDEN
         }
 
         this.modelMapper.map(eventDto, existingEvent);
